@@ -35,7 +35,7 @@ def get_gmail_service():
 
 FIXED_SENDER = "guptasanya366@gmail.com"
 
-def gmail_send_with_attachment(
+def send_mail_with_attachment(
     body_text: str,
     file_path: str,
     receiver_mail: str,
@@ -81,7 +81,7 @@ def gmail_send_with_attachment(
     except HttpError as e:
         raise RuntimeError(f"Gmail API error: {e}")
     
-def gmail_send_without_attachment(
+def send_gmail_without_attachment(
     body_text: str,
     receiver_mail: str,
     subject: str,
@@ -109,17 +109,11 @@ def gmail_send_without_attachment(
 
     return sent["id"]
 
-'''
-gmail_send_without_attachment(
+
+send_gmail_without_attachment(
     body_text="Demo mail 2",
     receiver_mail="guptasanya366@gmail.com",
     subject="demo auto mail",
 )
-'''
 
-gmail_send_with_attachment(
-    body_text="Demo mail with attachment",
-    file_path=r"C:\Users\Sanya\Downloads\TOC tutorial sheet 4.pdf",
-    receiver_mail="guptasanya366@gmail.com",
-    subject="nun much",
-)
+

@@ -1,3 +1,14 @@
+
+
+# Python
 arenv/
-sheets/creds.json"sheets/creds.json" 
-"sheets/creds.json" 
+__pycache__/
+
+# Google OAuth secrets (DO NOT COMMIT)
+token.pickle
+mail/GMailCreds.json
+sheets/creds.json
+
+context/
+
+.env
