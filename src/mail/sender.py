@@ -10,7 +10,7 @@ from googleapiclient.discovery import build
 import os, pickle
 
 SCOPES = ["https://www.googleapis.com/auth/gmail.send"]
-CREDS_FILE = r"C:\Users\Sanya\OneDrive\Document\projects\AutoOutreach-AI\mail\GMailCreds.json"
+CREDS_FILE = r"C:\Users\Sanya\OneDrive\Document\projects\AutoOutreach-AI\src\mail\gmail_creds.local.json"
 
 def get_gmail_service():
     creds = None
@@ -109,11 +109,5 @@ def send_gmail_without_attachment(
 
     return sent["id"]
 
-
-send_gmail_without_attachment(
-    body_text="Demo mail 2",
-    receiver_mail="guptasanya366@gmail.com",
-    subject="demo auto mail",
-)
 
 

@@ -11,6 +11,9 @@ from src.llm.mail_generator import generate_email
 from src.sheets.client import get_todo_rows, mark_done, sheet
 from src.mail.sender import send_gmail_without_attachment, send_mail_with_attachment
 from src.context.profile import get_resume_path
+import requests
+
+requests.get("https://oauth2.googleapis.com", timeout=5)
 
 def main():
     print("GETTING ROWS ....")
@@ -31,15 +34,17 @@ def main():
             resume_tag=row.get("resume_tag"),
         )
         
-        #resume_tag=row.get("resume_tag")
+        resume_tag=row.get("resume_tag")
 
-        #resume_path = get_resume_path(resume_tag)
+        
 
         #send mail
-        #if(resume_path):
-            #send_mail_with_attachment(email_text,resume_path,row["receiver_mail"],row['subject'])
-        #else:
-        send_gmail_without_attachment(email_text,row["receiver_email"],row['subject'])
+        if(resume_tag != 0):
+            intent = row["intent"]
+            print("DETAILS OF MAIL...\nRECIEVER MAIL : ",row["receiver_email"],"\nRESUME PATH: ",get_resume_path(row["resume_tag"]))
+            send_mail_with_attachment(email_text,get_resume_path(row["resume_tag"]),row["receiver_email"],row['subject'])
+        else:
+            send_gmail_without_attachment(email_text,row["receiver_email"],row['subject'])
         print("SENT MAIL WITH TEXT : ...\n")
         print(email_text)
         #update status in sheet

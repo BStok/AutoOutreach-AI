@@ -42,9 +42,9 @@ def build_prompt(
 
     prompt = f"""
 You write short, personalized cold emails.
-No fluff. No generic praise.
+No fluff. 
 You must obey tone, constraints, and banned topics.
-You never mention being an AI.
+You never mention being an AI. You do not include your thinking process in the output
 
 Sender:
 - Name: {name}
@@ -57,7 +57,7 @@ Receiver:
 - Domain: {role_description}
 - Organization type: {audience_type}
 
-Goal: Start a conversation, do not ask for a job.
+Goal: To get internship/interview
 
 Tone controls:
 - Formality: {tone.get('formality', 'n/a')}
@@ -74,16 +74,14 @@ Allowed claims (signal keywords): {claims_text}
 Constraints:
 - NO coursework mentions
 - NO generic skills lists
-- NO resume dumping
-- NO praise adjectives ("I admire", "impressive", etc.)
 
-Write ONE sentence connecting their domain to one concrete signal from my experience.
+if domain is research based write ONE sentence connecting their domain to one concrete signal from my experience .
+if domain is internship/corporate or reciever is an HR/engineer Write ONE sentence that demonstrates fit, not interest
 
 Output:
 - 4–6 sentences total
 - <= 120 words
 - Plain text, no emojis
-- End with a low-pressure close
 """
     return prompt
 

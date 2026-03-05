@@ -9,7 +9,7 @@ scope = ["https://spreadsheets.google.com/feeds",
          "https://www.googleapis.com/auth/drive.file",
          "https://www.googleapis.com/auth/drive"]
 BASE_DIR = Path(__file__).resolve().parent
-CREDS_FILE = BASE_DIR / "creds.json"
+CREDS_FILE = BASE_DIR / "creds.local.json"
 
 creds = ServiceAccountCredentials.from_json_keyfile_name(
     CREDS_FILE.as_posix(),
