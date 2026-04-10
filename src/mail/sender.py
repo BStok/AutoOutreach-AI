@@ -10,14 +10,19 @@ from googleapiclient.discovery import build
 import os, pickle
 
 SCOPES = ["https://www.googleapis.com/auth/gmail.send"]
-CREDS_FILE = r"C:\Users\Sanya\OneDrive\Document\projects\AutoOutreach-AI\src\mail\gmail_creds.local.json"
+CREDS_FILE = r"C:\Users\projects\AutoOutreach-AI\src\mail\gmail_creds.local.json"
 
 def get_gmail_service():
     creds = None
 
+    
     if os.path.exists("token.pickle"):
         with open("token.pickle", "rb") as token:
             creds = pickle.load(token)
+
+    print("VALID:", creds.valid if creds else None)
+    print("EXPIRED:", creds.expired if creds else None)
+    print("HAS REFRESH:", creds.refresh_token is not None if creds else None)
 
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
@@ -26,7 +31,12 @@ def get_gmail_service():
             flow = InstalledAppFlow.from_client_secrets_file(
                 CREDS_FILE, SCOPES
             )
-            creds = flow.run_local_server(port=0)
+            
+            creds = flow.run_local_server(
+                port=0,
+                access_type="offline",
+                prompt="consent"
+            )
 
         with open("token.pickle", "wb") as token:
             pickle.dump(creds, token)
