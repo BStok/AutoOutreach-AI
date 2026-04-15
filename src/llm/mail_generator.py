@@ -1,120 +1,106 @@
-
 import os
-from openai import OpenAI
-
-
-
-from src.context.profile import BASICS, TONE, ANTI_PATTERNS, select_experiences
-
-
-
 import json
+import requests
+
+from src.context.profile import BASICS, select_experiences
+
 
 def build_prompt(
     receiver_name, role_title, role_description,
-    audience_type, intent,  # audience_type = org type, intent = research/internship
+    audience_type, intent,
     experiences, signals
 ):
     name = BASICS["name"]
     role = BASICS["role"]
     
-    # serialize experiences to readable text
+    # Default values if missing
+    if not audience_type or audience_type.strip() == "":
+        audience_type = "engineering/corporate"
+    if not intent or intent.strip() == "":
+        intent = "internship"
+    
+    # Serialize experiences to readable text
     exp_text = "\n".join(
-        f"- {e['summary']} (signals: {', '.join(e.get('signals', []))})"
+        f"- {e.get('summary', '')} (signals: {', '.join(e.get('signals', []))})"
         for e in experiences
-    )
+    ) if experiences else "No specific experiences provided."
+    
+    # Active signals as allowed claims
+    claims_text = ", ".join(signals) if signals else "general technical competency"
 
-    # get tone based on role type (hr / engineer / professor)
-    # infer from audience_type as a simple heuristic
-    tone_key = "engineer"
-    if "professor" in audience_type.lower() or intent == "research":
-        tone_key = "professor"
-    elif "hr" in role_title.lower():
-        tone_key = "hr"
-    tone = TONE[tone_key]
+    # Unified prompt with explicit structure
+    prompt = f"""<|system|>You write concise, personalized cold emails from a candidate applying to a role.
 
-    # banned topics
-    banned = ANTI_PATTERNS.get(tone_key, [])
-    banned_text = ", ".join(banned) if banned else "none"
+CRITICAL RULES:
+1. You ARE the sender (applicant), NOT representing an organization
+2. NEVER use "we", "our team", "we are looking for", or organizational language
+3. Output ONLY the email body—no greeting, no sign-off, no preamble
+4. Always start "Hi, " and end with line separated "Thank You, 
+regards,
+Sanya Gupta(8288971449)"
+4. Exactly 4–6 sentences
+5. Maximum 120 words total
+6. Professional, direct, slightly technical tone
+7. NO coursework mentions, NO generic skill lists
+8. Include ONE sentence mentioning resume is attached
 
-    # active signals as allowed claims
-    claims_text = ", ".join(signals)
+STRUCTURE (mandatory):
+1. Introduction: who you are and your current role
+2. Fit statement: one sentence showing alignment using YOUR experience
+3. Domain relevance: one sentence about the field/role (use concrete signal if available, else generate domain-relevant insight)
+4. Clear ask: state the specific intent (internship/research opportunity)
+5. Closing: mention resume is attached
 
-    prompt = f"""
-You write short, personalized cold emails.
-No fluff. 
-You must obey tone, constraints, and banned topics.
-You never mention being an AI. You do not include your thinking process in the output
-
-Sender:
+SENDER:
 - Name: {name}
 - Current role: {role}
 - Intent: {intent}
 
-Receiver:
+RECEIVER:
 - Name: {receiver_name}
 - Role: {role_title}
 - Domain: {role_description}
 - Organization type: {audience_type}
 
-Goal: To get internship/interview
-
-Tone controls:
-- Formality: {tone.get('formality', 'n/a')}
-- Technical depth: {tone.get('technical', 'n/a')}
-- Curiosity: {tone.get('curiosity', 'n/a')}
-
-Banned topics: {banned_text}
-
-Relevant experiences:
+SENDER'S RELEVANT EXPERIENCES:
 {exp_text}
 
-Allowed claims (signal keywords): {claims_text}
+ALLOWED SIGNAL KEYWORDS (use sparingly, max 1-2):
+{claims_text}
 
-Constraints:
-- NO coursework mentions
-- NO generic skills lists
+Do NOT invent details about the receiver. If no receiver-specific information is available, generate a domain-relevant sentence instead.|<|user|>Write a cold email from {name} (currently {role}) to {receiver_name} ({role_title}) expressing interest in {intent}. Email body only.|<|assistant|>"""
 
-if domain is research based write ONE sentence connecting their domain to one concrete signal from my experience .
-if domain is internship/corporate or reciever is an HR/engineer Write ONE sentence that demonstrates fit, not interest
-
-Output:
-- 4–6 sentences total
-- <= 120 words
-- Plain text, no emojis
-"""
     return prompt
 
 
-#client initialisation
-client = OpenAI(
-    base_url="https://router.huggingface.co/v1",
-    api_key=os.environ["HF_TOKEN"],
-    )
-
-
-
-def generate_email(receiver_name, role_title, role_description, audience_type, intent, resume_tag=None):
+def generate_email(receiver_name, role_title, role_description, audience_type=None, intent=None, resume_tag=None):
+    # Default values if missing
+    if not audience_type or audience_type.strip() == "":
+        audience_type = "engineering/corporate"
+    if not intent or intent.strip() == "":
+        intent = "internship"
+    
     experiences, signals = select_experiences(audience_type, intent, resume_tag)
+    
     prompt = build_prompt(
         receiver_name, role_title, role_description,
         audience_type, intent,
         experiences, signals
     )
 
-    
-    completion = client.chat.completions.create(
-        model="Nanbeige/Nanbeige4.1-3B:featherless-ai",
-        messages=[
-            {"role": "system", "content": "You write concise, personalized cold emails. Plain text only."},
-            {"role": "user", "content": prompt}
-        ],
-        max_tokens=200,
-        temperature=0.7
+    # Call Ollama locally
+    response = requests.post(
+        "http://localhost:11434/api/generate",
+        json={
+            "model": "qwen2.5:7b-instruct",
+            "prompt": prompt,
+            "stream": False,
+            "options": {
+                "temperature": 0.7,
+                "top_p": 0.9,
+            }
+        }
     )
-
-    return completion.choices[0].message.content.strip()
-
-
-
-
+    
+    result = response.json()
+    return result['response'].strip()
