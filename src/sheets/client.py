@@ -48,8 +48,8 @@ def mark_done(row_id,sheet):
     status_col = headers.index("status") + 1
     last_contacted_col = headers.index("last_contacted") + 1
 
-    sheet.update_cell(row_id+1, status_col, "done")
-    sheet.update_cell(row_id+1, last_contacted_col, now)
+    sheet.update_cell(row_id+2, status_col, "done")
+    sheet.update_cell(row_id+2, last_contacted_col, now)
 
 
 
