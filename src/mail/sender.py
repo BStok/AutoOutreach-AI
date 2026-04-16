@@ -43,7 +43,7 @@ def get_gmail_service():
 
     return build("gmail", "v1", credentials=creds)
 
-FIXED_SENDER = "guptasanya366@gmail.com"
+FIXED_SENDER = "sanya.uiet.pu@gmail.com"
 
 def send_mail_with_attachment(
     body_text: str,
